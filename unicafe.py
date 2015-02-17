@@ -43,4 +43,5 @@ for fd in fooddata["data"]:
         print fd["date"]
 
     for f in filter(lambda x: x["price"]["name"] in price, fd["data"]):
-        print "  " + f["name"]
+        fprice = f["price"]["name"]
+        print "  " + f["name"] + ("" if fprice=="Edullisesti" else " (" + fprice + ")")
