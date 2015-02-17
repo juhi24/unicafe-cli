@@ -10,9 +10,14 @@ def istoday(date):
     n=datetime.date.today()
     return d.month==n.month and d.day==n.day
 
-if len(sys.argv) != 2:
-    print "usage: " + sys.argv[0] + " <restaurant name>"
+if len(sys.argv) < 2:
+    print "usage: " + sys.argv[0] + " <restaurant name> [price class]"
+    print "example: " + sys.argv[0] + " Exactum Edullisesti"
+   
     exit(1)
+
+allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti"]
+price = allprice if len(sys.argv) == 2 else [sys.argv[2]]
 
 restaurants = json.load(urllib2.urlopen("http://messi.hyyravintolat.fi/publicapi/restaurants"))["data"]
 
@@ -37,5 +42,5 @@ for fd in fooddata["data"]:
     else:
         print fd["date"]
 
-    for f in fd["data"]:
+    for f in filter(lambda x: x["price"]["name"] in price, fd["data"]):
         print "  " + f["name"]
