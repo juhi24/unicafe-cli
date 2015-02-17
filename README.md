@@ -6,7 +6,7 @@ Command line interface for getting unicafe menus
 usage
 -----
 
-	./unicafe.py <restaurant name>
+	./unicafe.py <restaurant name> [price class]
 
 example
 -------
