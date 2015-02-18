@@ -11,33 +11,23 @@ usage
 example
 -------
 
-	aaro@ubumon400x:~$ ./unicafe.py Exactum
-	Ma 16.02
-		Parmesanbroileria, kermaviilikastiketta
-		Rapea kalaleike, ruohosipulikermaviiliä
-		Kikherne-pähkinäpataa
-		Vuohenjuustosalaattia
-		Hedelmä
-	Ti 17.02
-		Broilerikastiketta Tikka Masala
-		Lohimurekepihvit, sitruuna-kermaviilikastiketta
-		Kasviskorma
-		Laskiaispulla
+	$ ./unicafe.py Chemicum
 	Ke 18.02
-		Broilerimureketta, sitruunakastiketta
-		Soijapyörykät chilitomaattikastikkeessa
-		Hapankorppusilakat
-		Kylmäsavulohisalaattia
-		Valkosuklaavaahtoa
+		Kalapyöryköitä, sitruunakermaviilikastiketta
+		Porsaswokkia
+		Soijaa chilitomaattikastikkeessa
+		Makrillisalaattia
+		Vadelmakiisseliä, kermavaahtoa (Makeasti)
 	To 19.02
-		Smetanalohta
+		Kanapyörykät, BBQ-kastiketta
+		Kala-paprikapataa
 		Bataatti-papuhöystöä
-		Chili con Carne
-		Kinkkusalaattia
-		Viinimarjarahkaa
+		Palvikinkkusalaattia
+		Juuressosekeittoa (Kevyesti)
+		Ananasrahkaa (Makeasti)
 	Pe 20.02
-		Tomaatti-mozzarellasei
+		Paistettua lohta, wasabi-majoneensia (Maukkaasti)
 		Broileri-pekonihöystöä
 		Chili-kasvisvuokaa
-		Marjakimaraa, kinuskikastiketta
+		Kaura-raparperipaistosta, vaniljakastiketta (Makeasti)
 
