@@ -4,6 +4,7 @@ import urllib2
 import json
 import sys
 import datetime
+import argparse
 
 APIURL ="http://messi.hyyravintolat.fi/publicapi" 
 allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti"]
@@ -17,41 +18,49 @@ def apidate2date(apidate):
 def thisweek(date):
     return today.isocalendar()[1] == date.isocalendar()[1]
 
-if len(sys.argv) < 2:
-    print "usage: " + sys.argv[0] + " <restaurant name> [price class]"
-    print "example: " + sys.argv[0] + " Exactum Edullisesti"
-   
-    exit(1)
+def getfood(restaurant, prices):
+    fooddata = json.load(urllib2.urlopen(APIURL + "/restaurant/" + str(restaurant["id"])))
 
-price = allprice if len(sys.argv) == 2 else [sys.argv[2]]
+    print restaurant["name"]
+    print '='*len(restaurant["name"])
+    print
 
-restaurants = json.load(urllib2.urlopen(APIURL+"/restaurants"))["data"]
+    for fd in fooddata["data"]:
+        if not fd["data"]:
+            continue
 
-restaurant = None
+        menudate = apidate2date(fd["date"])
+        if menudate == today:
+            print '\033[1m' + fd["date"] + '\033[0m'
+        elif menudate < today or not thisweek(menudate):
+            continue
+        else:
+            print fd["date"]
 
-for r in restaurants:
-    if r["name"] == sys.argv[1]:
-        restaurant = r
-        break
+        for f in filter(lambda x: x["price"]["name"] in prices, fd["data"]):
+            price = f["price"]["name"]
+            print "  " + f["name"] + ("" if price=="Edullisesti" else " (" + price + ")")
 
-if not restaurant:
-    print "restaurant not found"
-    exit(2)
+    print
 
-fooddata = json.load(urllib2.urlopen(APIURL + "/restaurant/" + str(restaurant["id"])))
+def main(restaurants, prices):
+    allrestaurants = json.load(urllib2.urlopen(APIURL+"/restaurants"))["data"]
+    restaurants = filter(lambda r: r["name"] in restaurants, allrestaurants)
 
-for fd in fooddata["data"]:
-    if not fd["data"]:
-        continue
+    if not restaurants:
+        print "restaurant not found"
+        exit(2)
 
-    menudate = apidate2date(fd["date"])
-    if menudate == today:
-        print '\033[1m' + fd["date"] + '\033[0m'
-    elif menudate < today or not thisweek(menudate):
-        continue
-    else:
-        print fd["date"]
+    for restaurant in restaurants:
+        getfood(restaurant, prices)
 
-    for f in filter(lambda x: x["price"]["name"] in price, fd["data"]):
-        fprice = f["price"]["name"]
-        print "  " + f["name"] + ("" if fprice=="Edullisesti" else " (" + fprice + ")")
+parser = argparse.ArgumentParser(description="Get Unicafe lunch lists")
+parser.add_argument("restaurant", nargs="?")
+parser.add_argument("-r", metavar="restaurant", nargs="+", action="append")
+parser.add_argument("-p", metavar="prices", nargs="*", action="append", choices=allprice)
+p = None
+
+args = parser.parse_args()
+r = [args.restaurant] if args.restaurant else map(lambda r: r[0], args.r)
+p = allprice if not args.p else map(lambda p: p[0], args.p)
+main(r, p)
