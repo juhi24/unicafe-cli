@@ -24,10 +24,11 @@ def daterangestr(date1, date2):
     return date1 if date1 == date2 else date1 + " - " + date2
 
 def gethours(fooddata):
+    timetype = "lounas"
     opentime = None
     closetime = None
     daystrs = []
-    for time in fooddata["information"]["lounas"]["regular"]:
+    for time in fooddata["information"][timetype]["regular"]:
         opentime = time["open"]
         closetime = time["close"]
         days = []
@@ -42,14 +43,18 @@ def gethours(fooddata):
         print dayset + ": " + hours
 
     extimes = []
-    for extime in fooddata["information"]["lounas"]["exception"]:
-        if extime["from"] and extime["to"]:
-            days = daterangestr(extime["from"], extime["to"])
-            status = "Suljettu" if extime["closed"] else extime["open"] + "-" + extime["close"]
-            extimes.append(days + ": " + status)
-    if extimes:
-        print "\033[31mPoikkeukset\033[0m"
-        print ", ".join(extimes)
+    for i in range(2):
+        for extime in fooddata["information"][timetype]["exception"]:
+            if extime["from"] and extime["to"]:
+                days = daterangestr(extime["from"], extime["to"])
+                status = "Suljettu" if extime["closed"] else extime["open"] + "-" + extime["close"]
+                extimes.append(days + ": " + status)
+        if extimes:
+            print "\033[31mPoikkeukset\033[0m"
+            print ", ".join(extimes)
+            break
+        else:
+            timetype = "business"
 
 def getfood(fooddata, prices):
     for fd in fooddata["data"]:
