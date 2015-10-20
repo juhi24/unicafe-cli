@@ -9,6 +9,8 @@ Simple usage:
 
 	./unicafe.py <restaurant name>
 	
+All available arguments:
+
 	positional arguments:
 		restaurant
 
