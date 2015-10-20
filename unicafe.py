@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import urllib2
 import json
@@ -6,12 +7,18 @@ import sys
 import codecs
 import datetime
 import argparse
+import re
 from termcolor import colored
+from textwrap import TextWrapper
 
 APIURL ="http://messi.hyyravintolat.fi/publicapi" 
 allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti"]
 today = datetime.date.today()
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+wrapper = TextWrapper(width=70)
+
+def noptheses(s):
+    return re.sub('\s+\([^()]*\)', '', s)
 
 def apidate2date(apidate):
     d=datetime.datetime.strptime(apidate.split(' ')[1], "%d.%m").date()
@@ -57,7 +64,7 @@ def gethours(fooddata):
         else:
             timetype = "business"
 
-def getfood(fooddata, prices, only_today):
+def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special):
     for fd in fooddata["data"]:
         if not fd["data"]:
             continue
@@ -73,12 +80,37 @@ def getfood(fooddata, prices, only_today):
 
         for f in filter(lambda x: x["price"]["name"] in prices, fd["data"]):
             price = f["price"]["name"]
-            print "  " + f["name"] + ("" if price=="Edullisesti" else " (" + price + ")")
+            notes = []
+            note = ""
+            if not price == "Edullisesti":
+                notes.append(price)
+
+            if show_special:
+                notes.extend(f["meta"]["0"])
+
+            if notes:
+                note = " (" + ", ".join(notes) + ")"
+
+            print "  " + f["name"] + note
+
+            if show_ingredients and f["ingredients"]:
+                ingredients = colored("Ingredients: ", attrs=['bold'])
+                ingredients += colored(f["ingredients"].replace('\n', ' '), 'grey')
+                if show_ingredients < 2:
+                    ingredients = noptheses(ingredients)
+                for i in wrapper.wrap(ingredients):
+                    print "    " + colored(i, 'grey')
+
+            if show_nutrition and f["nutrition"]:
+                nutrition = colored("Nutririon: ", attrs=['bold'])
+                nutrition += colored(f["nutrition"].replace('\n', ' '), 'grey')
+                for i in wrapper.wrap(nutrition):
+                    print "    " + colored(i, 'grey')
 
         if menudate == today and only_today:
             break
 
-def main(restaurants, prices, hours, only_today):
+def main(restaurants, prices, hours, only_today, show_ingredients, show_nutrition, show_special):
     allrestaurants = json.load(urllib2.urlopen(APIURL+"/restaurants"))["data"]
     restaurants = filter(lambda r: r["name"] in restaurants, allrestaurants)
 
@@ -93,7 +125,7 @@ def main(restaurants, prices, hours, only_today):
         if hours:
             gethours(fooddata)
         print
-        getfood(fooddata, prices, only_today)
+        getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special)
         print
 
 parser = argparse.ArgumentParser(description="Get Unicafe lunch lists")
@@ -102,9 +134,19 @@ parser.add_argument("-r", metavar="restaurant", nargs="+", action="append", help
 parser.add_argument("-p", metavar="prices", nargs="*", action="append", choices=allprice, help="only lunches in these price categories")
 parser.add_argument("-o", action="count", help="show business times")
 parser.add_argument("-t", action="count", help="only today's list")
+parser.add_argument("-i", action="count", help="show ingredients, use twice to show everything")
+parser.add_argument("-n", action="count", help="show nutrition information")
+parser.add_argument("-s", action="count", help="show special diet information")
+parser.add_argument("-v", action="count", help="show verbose information about lunches. same as -i -n -s.")
 p = None
 
 args = parser.parse_args()
 r = [args.restaurant] if args.restaurant else map(lambda r: r[0], args.r)
 p = allprice if not args.p else map(lambda p: p[0], args.p)
-main(r, p, args.o, args.t)
+
+if args.v:
+    args.i = 1
+    args.n = 1
+    args.s = 1
+
+main(r, p, args.o, args.t, args.i, args.n, args.s)
