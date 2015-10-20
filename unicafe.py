@@ -6,6 +6,7 @@ import sys
 import codecs
 import datetime
 import argparse
+from termcolor import colored
 
 APIURL ="http://messi.hyyravintolat.fi/publicapi" 
 allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti"]
@@ -50,20 +51,21 @@ def gethours(fooddata):
                 status = "Suljettu" if extime["closed"] else extime["open"] + "-" + extime["close"]
                 extimes.append(days + ": " + status)
         if extimes:
-            print "\033[31mPoikkeukset\033[0m"
+            print colored("Poikkeukset", 'red')
             print ", ".join(extimes)
             break
         else:
             timetype = "business"
 
-def getfood(fooddata, prices):
+def getfood(fooddata, prices, only_today):
     for fd in fooddata["data"]:
         if not fd["data"]:
             continue
 
         menudate = apidate2date(fd["date"])
+
         if menudate == today:
-            print '\033[1m' + fd["date"] + '\033[0m'
+            print colored(fd["date"], attrs=['bold'])
         elif menudate < today or not thisweek(menudate):
             continue
         else:
@@ -73,7 +75,10 @@ def getfood(fooddata, prices):
             price = f["price"]["name"]
             print "  " + f["name"] + ("" if price=="Edullisesti" else " (" + price + ")")
 
-def main(restaurants, prices, hours):
+        if menudate == today and only_today:
+            break
+
+def main(restaurants, prices, hours, only_today):
     allrestaurants = json.load(urllib2.urlopen(APIURL+"/restaurants"))["data"]
     restaurants = filter(lambda r: r["name"] in restaurants, allrestaurants)
 
@@ -88,17 +93,18 @@ def main(restaurants, prices, hours):
         if hours:
             gethours(fooddata)
         print
-        getfood(fooddata, prices)
+        getfood(fooddata, prices, only_today)
         print
 
 parser = argparse.ArgumentParser(description="Get Unicafe lunch lists")
 parser.add_argument("restaurant", nargs="?")
-parser.add_argument("-r", metavar="restaurant", nargs="+", action="append")
-parser.add_argument("-p", metavar="prices", nargs="*", action="append", choices=allprice)
-parser.add_argument("-o", action="count")
+parser.add_argument("-r", metavar="restaurant", nargs="+", action="append", help="name of restaurant")
+parser.add_argument("-p", metavar="prices", nargs="*", action="append", choices=allprice, help="only lunches in these price categories")
+parser.add_argument("-o", action="count", help="show business times")
+parser.add_argument("-t", action="count", help="only today's list")
 p = None
 
 args = parser.parse_args()
 r = [args.restaurant] if args.restaurant else map(lambda r: r[0], args.r)
 p = allprice if not args.p else map(lambda p: p[0], args.p)
-main(r, p, args.o)
+main(r, p, args.o, args.t)
