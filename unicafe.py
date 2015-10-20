@@ -141,8 +141,21 @@ parser.add_argument("-v", action="count", help="show verbose information about l
 p = None
 
 args = parser.parse_args()
-r = [args.restaurant] if args.restaurant else map(lambda r: r[0], args.r)
-p = allprice if not args.p else map(lambda p: p[0], args.p)
+if args.restaurant:
+    r = [args.restaurant]
+elif args.r:
+    r = map(lambda r: r[0], args.r)
+else:
+    parser.print_help()
+    exit(1)
+
+if not args.p:
+    p = allprice
+elif args.p:
+    p = map(lambda p: p[0], args.p)
+else:
+    parser.print_help()
+    exit(1)
 
 if args.v:
     args.i = 1
