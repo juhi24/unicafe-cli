@@ -1,10 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import urllib2
+import requests
 import json
-import sys
-import codecs
 import datetime
 import argparse
 import re
@@ -14,7 +12,6 @@ from textwrap import TextWrapper
 APIURL ="http://messi.hyyravintolat.fi/publicapi" 
 allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti"]
 today = datetime.date.today()
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 wrapper = TextWrapper(width=70)
 
 def noptheses(s):
@@ -48,7 +45,7 @@ def gethours(fooddata):
                 days=[]
 
     for dayset,hours in daystrs:
-        print dayset + ": " + hours
+        print(dayset + ": " + hours)
 
     extimes = []
     for i in range(2):
@@ -58,8 +55,8 @@ def gethours(fooddata):
                 status = "Suljettu" if extime["closed"] else extime["open"] + "-" + extime["close"]
                 extimes.append(days + ": " + status)
         if extimes:
-            print colored("Poikkeukset", 'red')
-            print ", ".join(extimes)
+            print(colored("Poikkeukset", 'red'))
+            print(", ".join(extimes))
             break
         else:
             timetype = "business"
@@ -72,11 +69,11 @@ def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show
         menudate = apidate2date(fd["date"])
 
         if menudate == today:
-            print colored(fd["date"], attrs=['bold'])
+            print(colored(fd["date"], attrs=['bold']))
         elif menudate < today or not thisweek(menudate):
             continue
         else:
-            print fd["date"]
+            print(fd["date"])
 
         for f in filter(lambda x: x["price"]["name"] in prices, fd["data"]):
             price = f["price"]["name"]
@@ -91,42 +88,42 @@ def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show
             if notes:
                 note = " (" + ", ".join(notes) + ")"
 
-            print "  " + f["name"] + note
+            print("  " + f["name"] + note)
 
             if show_ingredients and f["ingredients"]:
-                ingredients = colored("Ingredients: ", attrs=['bold'])
+                ingredients = colored("Sisältö: ", attrs=['bold'])
                 ingredients += colored(f["ingredients"].replace('\n', ' '), 'grey')
                 if show_ingredients < 2:
                     ingredients = noptheses(ingredients)
                 for i in wrapper.wrap(ingredients):
-                    print "    " + colored(i, 'grey')
+                    print("    " + colored(i, 'grey'))
 
             if show_nutrition and f["nutrition"]:
-                nutrition = colored("Nutririon: ", attrs=['bold'])
+                nutrition = colored("Ravintoarvot: ", attrs=['bold'])
                 nutrition += colored(f["nutrition"].replace('\n', ' '), 'grey')
                 for i in wrapper.wrap(nutrition):
-                    print "    " + colored(i, 'grey')
+                    print("    " + colored(i, 'grey'))
 
         if menudate == today and only_today:
             break
 
 def main(restaurants, prices, hours, only_today, show_ingredients, show_nutrition, show_special):
-    allrestaurants = json.load(urllib2.urlopen(APIURL+"/restaurants"))["data"]
-    restaurants = filter(lambda r: r["name"] in restaurants, allrestaurants)
+    allrestaurants = json.loads(requests.get(APIURL+"/restaurants").text)["data"]
+    restaurants = list(filter(lambda r: r["name"] in restaurants, allrestaurants))
 
     if not restaurants:
-        print "restaurant not found"
+        print("restaurant not found")
         exit(2)
 
     for restaurant in restaurants:
-        fooddata = json.load(urllib2.urlopen(APIURL + "/restaurant/" + str(restaurant["id"])))
-        print restaurant["name"]
-        print '='*len(restaurant["name"])
+        fooddata = json.loads(requests.get(APIURL + "/restaurant/" + str(restaurant["id"])).text)
+        print(restaurant["name"])
+        print('='*len(restaurant["name"]))
         if hours:
             gethours(fooddata)
-        print
+        print()
         getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special)
-        print
+        print()
 
 parser = argparse.ArgumentParser(description="Get Unicafe lunch lists")
 parser.add_argument("restaurant", nargs="?")
@@ -144,7 +141,7 @@ args = parser.parse_args()
 if args.restaurant:
     r = [args.restaurant]
 elif args.r:
-    r = map(lambda r: r[0], args.r)
+    r = list(map(lambda r: r[0], args.r))
 else:
     parser.print_help()
     exit(1)
@@ -152,7 +149,7 @@ else:
 if not args.p:
     p = allprice
 elif args.p:
-    p = map(lambda p: p[0], args.p)
+    p = list(map(lambda p: p[0], args.p))
 else:
     parser.print_help()
     exit(1)
