@@ -18,8 +18,9 @@ def noptheses(s):
     return re.sub('\s+\([^()]*\)', '', s)
 
 def apidate2date(apidate):
-    d=datetime.datetime.strptime(apidate.split(' ')[1], "%d.%m").date()
-    d=d.replace(year=today.year)
+    datestr = apidate.split(' ')[1]
+    day, month = map(int, datestr.split('.'))
+    d = datetime.date(today.year, month, day)
     return d
 
 def thisweek(date):
