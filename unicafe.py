@@ -10,7 +10,8 @@ from termcolor import colored
 from textwrap import TextWrapper
 
 APIURL ="http://messi.hyyravintolat.fi/publicapi" 
-allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti"]
+allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti", "Bistro"]
+cheap = ["Edullisesti", "Aukio Edullisesti"]
 today = datetime.date.today()
 wrapper = TextWrapper(width=70)
 
@@ -76,11 +77,14 @@ def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show
         else:
             print(fd["date"])
 
-        for f in filter(lambda x: x["price"]["name"] in prices, fd["data"]):
+        for f in fd["data"]:
+            if prices and f["price"]["name"] not in prices:
+                continue
+        #for f in filter(lambda x: x["price"]["name"] in prices, fd["data"]):
             price = f["price"]["name"]
             notes = []
             note = ""
-            if not price == "Edullisesti":
+            if not price in cheap:
                 notes.append(price)
 
             if show_special:
@@ -148,7 +152,7 @@ else:
     exit(1)
 
 if not args.p:
-    p = allprice
+    p = None
 elif args.p:
     p = list(map(lambda p: p[0], args.p))
 else:
