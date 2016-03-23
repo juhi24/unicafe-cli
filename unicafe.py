@@ -32,6 +32,12 @@ def daterangestr(date1, date2):
 
 def gethours(fooddata):
     timetype = "lounas"
+    if not any(fooddata["information"][timetype]["regular"][0]["when"]):
+        print("Avoinna:")
+        timetype = "business"
+    else:
+        print("Lounasaika:")
+
     opentime = None
     closetime = None
     daystrs = []
