@@ -69,16 +69,20 @@ def gethours(fooddata):
         else:
             timetype = "business"
 
-def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special):
+def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special, days):
     for fd in fooddata["data"]:
         if not fd["data"]:
             continue
+        if days == 0:
+            break
+        elif days:
+            days -= 1
 
         menudate = apidate2date(fd["date"])
 
         if menudate == today:
             print(colored(fd["date"], attrs=['bold']))
-        elif menudate < today or not thisweek(menudate):
+        elif menudate < today or (not thisweek(menudate) and not days):
             continue
         else:
             print(fd["date"])
@@ -118,7 +122,7 @@ def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show
         if menudate == today and only_today:
             break
 
-def main(restaurants, prices, hours, only_today, show_ingredients, show_nutrition, show_special):
+def main(restaurants, prices, hours, only_today, show_ingredients, show_nutrition, show_special, days):
     allrestaurants = json.loads(requests.get(APIURL+"/restaurants").text)["data"]
     restaurants = list(filter(lambda r: r["name"] in restaurants, allrestaurants))
 
@@ -133,19 +137,20 @@ def main(restaurants, prices, hours, only_today, show_ingredients, show_nutritio
         if hours:
             gethours(fooddata)
         print()
-        getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special)
+        getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show_special, days)
         print()
 
 parser = argparse.ArgumentParser(description="Get Unicafe lunch lists")
 parser.add_argument("restaurant", nargs="?")
 parser.add_argument("-r", metavar="restaurant", nargs="+", action="append", help="name of restaurant")
 parser.add_argument("-p", metavar="prices", nargs="*", action="append", choices=allprice, help="only lunches in these price categories")
-parser.add_argument("-o", action="count", help="show business times")
-parser.add_argument("-t", action="count", help="only today's list")
-parser.add_argument("-i", action="count", help="show ingredients, use twice to show everything")
-parser.add_argument("-n", action="count", help="show nutrition information")
-parser.add_argument("-s", action="count", help="show special diet information")
-parser.add_argument("-v", action="count", help="show verbose information about lunches. same as -i -n -s.")
+parser.add_argument("-o", action="store_true", help="show business times")
+parser.add_argument("-t", action="store_true", help="only today's list")
+parser.add_argument("-d", action="store", help="days", type=int)
+parser.add_argument("-i", action="store_true", help="show ingredients, use twice to show everything")
+parser.add_argument("-n", action="store_true", help="show nutrition information")
+parser.add_argument("-s", action="store_true", help="show special diet information")
+parser.add_argument("-v", action="store_true", help="show verbose information about lunches. same as -ins.")
 p = None
 
 args = parser.parse_args()
@@ -166,8 +171,8 @@ else:
     exit(1)
 
 if args.v:
-    args.i = 1
-    args.n = 1
-    args.s = 1
+    args.i = True
+    args.n = True
+    args.s = True
 
-main(r, p, args.o, args.t, args.i, args.n, args.s)
+main(r, p, args.o, args.t, args.i, args.n, args.s, args.d)
