@@ -73,17 +73,19 @@ def getfood(fooddata, prices, only_today, show_ingredients, show_nutrition, show
     for fd in fooddata["data"]:
         if not fd["data"]:
             continue
+
+        menudate = apidate2date(fd["date"])
+
+        if menudate < today or (not thisweek(menudate) and not days):
+            continue
+
         if days == 0:
             break
         elif days:
             days -= 1
 
-        menudate = apidate2date(fd["date"])
-
         if menudate == today:
             print(colored(fd["date"], attrs=['bold']))
-        elif menudate < today or (not thisweek(menudate) and not days):
-            continue
         else:
             print(fd["date"])
 
