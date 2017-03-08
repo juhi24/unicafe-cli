@@ -10,7 +10,7 @@ APIURL ="http://messi.hyyravintolat.fi/publicapi"
 allprice = ["Edullisesti", "Maukkaasti", "Makeasti", "Kevyesti", "Bistro"]
 
 
-def main(restaurants, prices, hours, only_today, show_ingredients, show_nutrition, show_special, days):
+def cli(restaurants, prices, hours, only_today, show_ingredients, show_nutrition, show_special, days):
     allrestaurants = json.loads(requests.get(APIURL+"/restaurants").text)["data"]
     restaurants = list(filter(lambda r: r["name"] in restaurants, allrestaurants))
 
@@ -29,8 +29,7 @@ def main(restaurants, prices, hours, only_today, show_ingredients, show_nutritio
         print()
 
 
-if __name__ == "__main__":
-    # execute only if run as a script
+def main():
     parser = argparse.ArgumentParser(description="Get Unicafe lunch lists")
     parser.add_argument("restaurant", nargs="?")
     parser.add_argument("-r", metavar="restaurant", nargs="+", action="append", help="name of restaurant")
@@ -65,4 +64,9 @@ if __name__ == "__main__":
         args.i = True
         args.n = True
         args.s = True
-    main(r, p, args.o, args.t, args.i, args.n, args.s, args.d)
+    cli(r, p, args.o, args.t, args.i, args.n, args.s, args.d)
+
+
+if __name__ == "__main__":
+    # execute only if run as a script
+    main()
