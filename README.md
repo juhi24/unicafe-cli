@@ -3,12 +3,21 @@ unicafe-cli
 
 Command line interface for getting unicafe menus
 
+
+installation
+------------
+
+Make sure you have `setuptools` installed. Inside this directory run:
+
+    python setup.py install
+
 usage
 -----
-Simple usage:	
 
-	./unicafe.py <restaurant name>
-	
+Simple usage:
+
+	unicafe <restaurant name>
+
 All available arguments:
 
 	positional arguments:
@@ -30,7 +39,7 @@ All available arguments:
 example
 -------
 
-	$ ./unicafe.py Chemicum
+	$ unicafe Chemicum
 	Ke 18.02
 		Kalapyöryköitä, sitruunakermaviilikastiketta
 		Porsaswokkia
